@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────
+   ARISE DESIGN SYSTEM
+   Two themes:
+     • Default (light): warm whites, violet accent
+     • .dark:           cool navy-black, indigo accent
+   ────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Arise brand palette */
+  --color-arise-indigo-50:  #eef2ff;
+  --color-arise-indigo-100: #e0e7ff;
+  --color-arise-indigo-400: #818cf8;
+  --color-arise-indigo-500: #6366f1;
+  --color-arise-indigo-600: #4f46e5;
+  --color-arise-indigo-700: #4338ca;
+
+  --color-arise-violet-50:  #f5f3ff;
+  --color-arise-violet-500: #8b5cf6;
+  --color-arise-violet-600: #7c3aed;
+  --color-arise-violet-700: #6d28d9;
+
+  --color-arise-xp-light:   #059669;
+  --color-arise-xp-dark:    #34d399;
+
+  /* Dark theme surfaces (cool-toned) */
+  --color-dark-bg:           #080b12;
+  --color-dark-surface-1:    #0f1320;
+  --color-dark-surface-2:    #161b2e;
+  --color-dark-surface-3:    #1e243d;
+  --color-dark-border:       #1e2640;
+  --color-dark-border-muted: #141829;
+  --color-dark-text-1:       #eef0ff;
+  --color-dark-text-2:       #7b82a8;
+  --color-dark-text-3:       #454b6a;
+  --color-dark-accent:       #6366f1;
+  --color-dark-accent-dim:   rgba(99, 102, 241, 0.12);
+  --color-dark-xp:           #34d399;
+  --color-dark-danger:       #f87171;
+  --color-dark-warning:      #fbbf24;
+  --color-dark-success:      #34d399;
+
+  /* Light theme surfaces (warm-toned) */
+  --color-light-bg:           #faf8f5;
+  --color-light-surface-1:    #ffffff;
+  --color-light-surface-2:    #f5f0ea;
+  --color-light-surface-3:    #ede8e0;
+  --color-light-border:       #e5ddd4;
+  --color-light-border-muted: #ede8e0;
+  --color-light-text-1:       #1c1410;
+  --color-light-text-2:       #6b5e54;
+  --color-light-text-3:       #b8a898;
+  --color-light-accent:       #7c3aed;
+  --color-light-accent-dim:   rgba(124, 58, 237, 0.08);
+  --color-light-xp:           #059669;
+  --color-light-danger:       #dc2626;
+  --color-light-warning:      #d97706;
+  --color-light-success:      #059669;
+
+  /* Border radii */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+}
+
+/* ── Semantic CSS variables (switch per theme) ─────────── */
+:root {
+  --bg:           var(--color-light-bg);
+  --surface-1:    var(--color-light-surface-1);
+  --surface-2:    var(--color-light-surface-2);
+  --surface-3:    var(--color-light-surface-3);
+  --border:       var(--color-light-border);
+  --border-muted: var(--color-light-border-muted);
+  --text-1:       var(--color-light-text-1);
+  --text-2:       var(--color-light-text-2);
+  --text-3:       var(--color-light-text-3);
+  --accent:       var(--color-light-accent);
+  --accent-dim:   var(--color-light-accent-dim);
+  --xp-color:     var(--color-light-xp);
+  --danger:       var(--color-light-danger);
+  --warning:      var(--color-light-warning);
+  --success:      var(--color-light-success);
+}
+
+.dark {
+  --bg:           var(--color-dark-bg);
+  --surface-1:    var(--color-dark-surface-1);
+  --surface-2:    var(--color-dark-surface-2);
+  --surface-3:    var(--color-dark-surface-3);
+  --border:       var(--color-dark-border);
+  --border-muted: var(--color-dark-border-muted);
+  --text-1:       var(--color-dark-text-1);
+  --text-2:       var(--color-dark-text-2);
+  --text-3:       var(--color-dark-text-3);
+  --accent:       var(--color-dark-accent);
+  --accent-dim:   var(--color-dark-accent-dim);
+  --xp-color:     var(--color-dark-xp);
+  --danger:       var(--color-dark-danger);
+  --warning:      var(--color-dark-warning);
+  --success:      var(--color-dark-success);
+}
+
+/* ── Base ──────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ── Scrollbar (dark theme) ────────────────────────────── */
+.dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+.dark ::-webkit-scrollbar-track { background: var(--surface-1); }
+.dark ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
+
+/* ── Utility classes ───────────────────────────────────── */
+.arise-card {
+  background-color: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.arise-card-2 {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.arise-text-1 { color: var(--text-1); }
+.arise-text-2 { color: var(--text-2); }
+.arise-text-3 { color: var(--text-3); }
+.arise-accent  { color: var(--accent); }
+.arise-xp      { color: var(--xp-color); }
+
+/* ── Reduced motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
