@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
@@ -78,38 +80,147 @@ class _AuthChangeNotifier extends ChangeNotifier {
   }
 }
 
-class _SplashScreen extends StatelessWidget {
+// ── Solo Leveling palette (splash) ────────────────────────────────────────────
+const _kSplashBg   = Color(0xFF0A0A0F);
+const _kSplashBlue = Color(0xFF4FC3F7);
+const _kSplashText = Color(0xFFE2E8F0);
+
+class _SplashScreen extends StatefulWidget {
   const _SplashScreen();
 
   @override
+  State<_SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<_SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+  late final Animation<double> _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    )..repeat(reverse: true);
+    _glow = CurvedAnimation(parent: _pulse, curve: Curves.easeInOut);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'ARISE',
-              style: TextStyle(
-                color: cs.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 5,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: _kSplashBg,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Pulsing shield icon
+              AnimatedBuilder(
+                animation: _glow,
+                builder: (_, child) => Container(
+                  width: 88, height: 88,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _kSplashBlue.withValues(
+                        alpha: 0.06 + 0.06 * _glow.value),
+                    border: Border.all(
+                      color: _kSplashBlue.withValues(
+                          alpha: 0.2 + 0.2 * _glow.value),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _kSplashBlue.withValues(
+                            alpha: 0.10 + 0.18 * _glow.value),
+                        blurRadius: 24 + 20 * _glow.value,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: child,
+                ),
+                child: const Icon(Icons.shield_outlined,
+                    color: _kSplashBlue, size: 36),
               ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  cs.onSurface.withValues(alpha: 0.3),
+              const SizedBox(height: 30),
+
+              // ARISE wordmark with pulsing flanking lines
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedBuilder(
+                    animation: _glow,
+                    builder: (_, __) => Container(
+                      width: 32, height: 1,
+                      color: _kSplashBlue.withValues(
+                          alpha: 0.25 + 0.3 * _glow.value),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Text(
+                    'ARISE',
+                    style: TextStyle(
+                      color: _kSplashText, fontSize: 30,
+                      fontWeight: FontWeight.w800, letterSpacing: 8,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  AnimatedBuilder(
+                    animation: _glow,
+                    builder: (_, __) => Container(
+                      width: 32, height: 1,
+                      color: _kSplashBlue.withValues(
+                          alpha: 0.25 + 0.3 * _glow.value),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              const Text(
+                'SYSTEM INITIALIZING',
+                style: TextStyle(
+                  color: _kSplashBlue, fontSize: 9,
+                  fontWeight: FontWeight.w600, letterSpacing: 3.5,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 60),
+
+              // Staggered loading dots
+              AnimatedBuilder(
+                animation: _pulse,
+                builder: (_, __) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(3, (i) {
+                      final v = ((_pulse.value - i / 3) % 1.0)
+                          .clamp(0.0, 1.0);
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5),
+                        child: Container(
+                          width: 5, height: 5,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _kSplashBlue.withValues(
+                                alpha: 0.15 + 0.85 * v),
+                          ),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            ],
+          ).animate().fadeIn(duration: 600.ms),
         ),
       ),
     );
