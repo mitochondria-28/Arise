@@ -11,15 +11,15 @@ import '../skills/skill_provider.dart';
 import 'profile_provider.dart';
 
 // ── Solo Leveling palette ──────────────────────────────────────────────────────
-const _kBg     = Color(0xFF0A0A0F);
-const _kCard   = Color(0xFF1C1C2E);
+const _kBg = Color(0xFF0A0A0F);
+const _kCard = Color(0xFF1C1C2E);
 const _kBorder = Color(0xFF2A2A3E);
-const _kInput  = Color(0xFF0D0D1A);
-const _kBlue   = Color(0xFF4FC3F7);
-const _kGreen  = Color(0xFF34D399);
-const _kRed    = Color(0xFFEF4444);
-const _kText   = Color(0xFFE2E8F0);
-const _kDim    = Color(0xFF64748B);
+const _kInput = Color(0xFF0D0D1A);
+const _kBlue = Color(0xFF4FC3F7);
+const _kGreen = Color(0xFF34D399);
+const _kRed = Color(0xFFEF4444);
+const _kText = Color(0xFFE2E8F0);
+const _kDim = Color(0xFF64748B);
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 InputDecoration _inputDec(String hint, {bool counter = false}) =>
@@ -29,8 +29,7 @@ InputDecoration _inputDec(String hint, {bool counter = false}) =>
       filled: true,
       fillColor: _kInput,
       isDense: true,
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: _kBorder),
@@ -65,8 +64,8 @@ class ProfileScreen extends ConsumerWidget {
             Expanded(
               child: async.when(
                 loading: () => const Center(
-                  child: CircularProgressIndicator(
-                      color: _kBlue, strokeWidth: 2),
+                  child:
+                      CircularProgressIndicator(color: _kBlue, strokeWidth: 2),
                 ),
                 error: (e, _) => Center(
                   child: Padding(
@@ -81,8 +80,7 @@ class ProfileScreen extends ConsumerWidget {
                           e is AppException
                               ? e.message
                               : 'Failed to load profile.',
-                          style: const TextStyle(
-                              color: _kText, fontSize: 14),
+                          style: const TextStyle(color: _kText, fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
@@ -99,15 +97,11 @@ class ProfileScreen extends ConsumerWidget {
                 data: (me) => RefreshIndicator(
                   color: _kBlue,
                   backgroundColor: _kCard,
-                  onRefresh: () =>
-                      ref.read(profileProvider.notifier).refresh(),
+                  onRefresh: () => ref.read(profileProvider.notifier).refresh(),
                   child: ListView(
-                    padding:
-                        const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                     children: [
-                      _AccountCard(
-                              email: me.email,
-                              createdAt: me.createdAt)
+                      _AccountCard(email: me.email, createdAt: me.createdAt)
                           .animate()
                           .fadeIn(duration: 350.ms),
                       const SizedBox(height: 14),
@@ -120,10 +114,8 @@ class ProfileScreen extends ConsumerWidget {
                           displayName: me.profile!.displayName,
                           bio: me.profile!.bio ?? '',
                           timezone: me.profile!.timezone,
-                          themePreference:
-                              me.profile!.themePreference,
-                        ).animate().fadeIn(
-                            delay: 120.ms, duration: 350.ms)
+                          themePreference: me.profile!.themePreference,
+                        ).animate().fadeIn(delay: 120.ms, duration: 350.ms)
                       else
                         const _NoProfileCard()
                             .animate()
@@ -168,7 +160,8 @@ class _ProfileHeader extends StatelessWidget {
           GestureDetector(
             onTap: onBack,
             child: Container(
-              width: 36, height: 36,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: _kBorder,
                 borderRadius: BorderRadius.circular(10),
@@ -184,7 +177,8 @@ class _ProfileHeader extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 5, height: 5,
+                    width: 5,
+                    height: 5,
                     decoration: const BoxDecoration(
                         color: _kBlue, shape: BoxShape.circle),
                   ),
@@ -192,8 +186,10 @@ class _ProfileHeader extends StatelessWidget {
                   const Text(
                     'HUNTER PROFILE',
                     style: TextStyle(
-                      color: _kBlue, fontSize: 9,
-                      fontWeight: FontWeight.w700, letterSpacing: 2.5,
+                      color: _kBlue,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.5,
                     ),
                   ),
                 ],
@@ -202,7 +198,8 @@ class _ProfileHeader extends StatelessWidget {
               const Text(
                 'Profile & Settings',
                 style: TextStyle(
-                  color: _kText, fontSize: 18,
+                  color: _kText,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -243,16 +240,19 @@ class _SectionCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 4, height: 4,
-                decoration: BoxDecoration(
-                    color: tagColor, shape: BoxShape.circle),
+                width: 4,
+                height: 4,
+                decoration:
+                    BoxDecoration(color: tagColor, shape: BoxShape.circle),
               ),
               const SizedBox(width: 7),
               Text(
                 tag,
                 style: TextStyle(
-                  color: tagColor, fontSize: 9,
-                  fontWeight: FontWeight.w700, letterSpacing: 2.5,
+                  color: tagColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.5,
                 ),
               ),
             ],
@@ -267,12 +267,12 @@ class _SectionCard extends StatelessWidget {
 
 // ── Skills section ─────────────────────────────────────────────────────────────
 const _kSkillColors = {
-  'vitality':     Color(0xFFEF4444),
-  'strength':     Color(0xFFE67E22),
+  'vitality': Color(0xFFEF4444),
+  'strength': Color(0xFFE67E22),
   'intelligence': Color(0xFF3B82F6),
-  'wisdom':       Color(0xFFA855F7),
-  'charisma':     Color(0xFFEAB308),
-  'discipline':   Color(0xFF22C55E),
+  'wisdom': Color(0xFFA855F7),
+  'charisma': Color(0xFFEAB308),
+  'discipline': Color(0xFF22C55E),
 };
 
 Color _skillColor(String cat) => _kSkillColors[cat] ?? const Color(0xFF64748B);
@@ -298,35 +298,39 @@ class _SkillsSection extends ConsumerWidget {
           Row(
             children: [
               Container(
-                width: 4, height: 4,
-                decoration: const BoxDecoration(
-                    color: _kGreen, shape: BoxShape.circle),
+                width: 4,
+                height: 4,
+                decoration:
+                    const BoxDecoration(color: _kGreen, shape: BoxShape.circle),
               ),
               const SizedBox(width: 7),
               const Text(
                 'SKILLS',
                 style: TextStyle(
-                  color: _kGreen, fontSize: 9,
-                  fontWeight: FontWeight.w700, letterSpacing: 2.5,
+                  color: _kGreen,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 2.5,
                 ),
               ),
               const Spacer(),
               GestureDetector(
                 onTap: () => context.go('/skills'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: _kGreen.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: _kGreen.withValues(alpha: 0.3)),
+                    border: Border.all(color: _kGreen.withValues(alpha: 0.3)),
                   ),
                   child: const Text(
                     'VIEW ALL',
                     style: TextStyle(
-                      color: _kGreen, fontSize: 9,
-                      fontWeight: FontWeight.w700, letterSpacing: 1,
+                      color: _kGreen,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
                     ),
                   ),
                 ),
@@ -340,8 +344,8 @@ class _SkillsSection extends ConsumerWidget {
             loading: () => const SizedBox(
               height: 64,
               child: Center(
-                child: CircularProgressIndicator(
-                    color: _kGreen, strokeWidth: 2),
+                child:
+                    CircularProgressIndicator(color: _kGreen, strokeWidth: 2),
               ),
             ),
             error: (_, __) => const SizedBox(
@@ -362,7 +366,8 @@ class _SkillsSection extends ConsumerWidget {
                     child: Row(
                       children: [
                         Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
                             color: _kGreen.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(10),
@@ -380,15 +385,15 @@ class _SkillsSection extends ConsumerWidget {
                               Text(
                                 'No skills unlocked yet',
                                 style: TextStyle(
-                                  color: _kText, fontSize: 13,
+                                  color: _kText,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(height: 2),
                               Text(
                                 'Visit the Skill Tree to unlock your first skill',
-                                style: TextStyle(
-                                    color: _kDim, fontSize: 11),
+                                style: TextStyle(color: _kDim, fontSize: 11),
                               ),
                             ],
                           ),
@@ -412,8 +417,7 @@ class _SkillsSection extends ConsumerWidget {
                       scrollDirection: Axis.horizontal,
                       itemCount: preview.length,
                       separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (_, i) =>
-                          _SkillTile(us: preview[i]),
+                      itemBuilder: (_, i) => _SkillTile(us: preview[i]),
                     ),
                   ),
                   if (skills.length > 1) ...[
@@ -424,20 +428,21 @@ class _SkillsSection extends ConsumerWidget {
                         _SkillStat(
                           icon: Icons.bolt_rounded,
                           color: _kGreen,
-                          label: '${skills.fold(0, (s, e) => s + e.totalXpEarned)} total XP',
+                          label:
+                              '${skills.fold(0, (s, e) => s + e.totalXpEarned)} total XP',
                         ),
                         const SizedBox(width: 16),
                         _SkillStat(
                           icon: Icons.repeat_rounded,
                           color: _kBlue,
-                          label: '${skills.fold(0, (s, e) => s + e.sessionCount)} sessions',
+                          label:
+                              '${skills.fold(0, (s, e) => s + e.sessionCount)} sessions',
                         ),
                         const Spacer(),
                         if (skills.length > 6)
                           Text(
                             '+${skills.length - 6} more',
-                            style: const TextStyle(
-                                color: _kDim, fontSize: 11),
+                            style: const TextStyle(color: _kDim, fontSize: 11),
                           ),
                       ],
                     ),
@@ -474,7 +479,8 @@ class _SkillTile extends StatelessWidget {
         children: [
           // Level ring + emoji
           SizedBox(
-            width: 36, height: 36,
+            width: 36,
+            height: 36,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -484,8 +490,7 @@ class _SkillTile extends StatelessWidget {
                   backgroundColor: color.withValues(alpha: 0.12),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
-                Text(us.skill.emoji,
-                    style: const TextStyle(fontSize: 14)),
+                Text(us.skill.emoji, style: const TextStyle(fontSize: 14)),
               ],
             ),
           ),
@@ -493,7 +498,8 @@ class _SkillTile extends StatelessWidget {
           Text(
             us.skill.name,
             style: const TextStyle(
-              color: _kText, fontSize: 9,
+              color: _kText,
+              fontSize: 9,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 1,
@@ -504,7 +510,8 @@ class _SkillTile extends StatelessWidget {
           Text(
             'Lv ${us.level}',
             style: TextStyle(
-              color: color, fontSize: 9,
+              color: color,
+              fontSize: 9,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -527,8 +534,7 @@ class _SkillStat extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 13),
           const SizedBox(width: 4),
-          Text(label,
-              style: const TextStyle(color: _kDim, fontSize: 11)),
+          Text(label, style: const TextStyle(color: _kDim, fontSize: 11)),
         ],
       );
 }
@@ -543,9 +549,8 @@ class _AccountCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final since = DateTime.tryParse(createdAt);
-    final sinceStr = since != null
-        ? 'Since ${_month(since.month)} ${since.year}'
-        : '';
+    final sinceStr =
+        since != null ? 'Since ${_month(since.month)} ${since.year}' : '';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -558,12 +563,13 @@ class _AccountCard extends StatelessWidget {
         children: [
           // Avatar
           Container(
-            width: 52, height: 52,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               color: _kBlue.withValues(alpha: 0.10),
               shape: BoxShape.circle,
-              border: Border.all(
-                  color: _kBlue.withValues(alpha: 0.3), width: 1.5),
+              border:
+                  Border.all(color: _kBlue.withValues(alpha: 0.3), width: 1.5),
             ),
             child: Center(
               child: Text(
@@ -584,7 +590,8 @@ class _AccountCard extends StatelessWidget {
                 Text(
                   email,
                   style: const TextStyle(
-                    color: _kText, fontSize: 14,
+                    color: _kText,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -593,27 +600,26 @@ class _AccountCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     sinceStr,
-                    style: const TextStyle(
-                        color: _kDim, fontSize: 11),
+                    style: const TextStyle(color: _kDim, fontSize: 11),
                   ),
                 ],
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: _kGreen.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(6),
-              border: Border.all(
-                  color: _kGreen.withValues(alpha: 0.3)),
+              border: Border.all(color: _kGreen.withValues(alpha: 0.3)),
             ),
             child: const Text(
               'ACTIVE',
               style: TextStyle(
-                color: _kGreen, fontSize: 9,
-                fontWeight: FontWeight.w700, letterSpacing: 1,
+                color: _kGreen,
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
               ),
             ),
           ),
@@ -623,8 +629,19 @@ class _AccountCard extends StatelessWidget {
   }
 
   String _month(int m) => const [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
       ][m];
 }
 
@@ -677,9 +694,9 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.displayName);
-    _bioCtrl  = TextEditingController(text: widget.bio);
-    _tzCtrl   = TextEditingController(text: widget.timezone);
-    _theme    = widget.themePreference;
+    _bioCtrl = TextEditingController(text: widget.bio);
+    _tzCtrl = TextEditingController(text: widget.timezone);
+    _theme = widget.themePreference;
   }
 
   @override
@@ -691,7 +708,10 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
   }
 
   Future<void> _save() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(profileProvider.notifier).updateProfile(
             displayName: _nameCtrl.text.trim(),
@@ -700,15 +720,26 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
             themePreference: _theme,
           );
       if (mounted) {
-        setState(() { _saved = true; });
+        setState(() {
+          _saved = true;
+        });
         Future.delayed(const Duration(milliseconds: 2500), () {
-          if (mounted) setState(() { _saved = false; });
+          if (mounted)
+            setState(() {
+              _saved = false;
+            });
         });
       }
     } on AppException catch (e) {
-      if (mounted) setState(() { _error = e.message; });
+      if (mounted)
+        setState(() {
+          _error = e.message;
+        });
     } finally {
-      if (mounted) setState(() { _loading = false; });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     }
   }
 
@@ -764,9 +795,8 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(vertical: 9),
                       decoration: BoxDecoration(
-                        color: selected
-                            ? _kBlue.withValues(alpha: 0.12)
-                            : _kInput,
+                        color:
+                            selected ? _kBlue.withValues(alpha: 0.12) : _kInput,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: selected
@@ -817,10 +847,10 @@ class _PasswordSection extends ConsumerStatefulWidget {
 
 class _PasswordSectionState extends ConsumerState<_PasswordSection> {
   final _currCtrl = TextEditingController();
-  final _newCtrl  = TextEditingController();
+  final _newCtrl = TextEditingController();
   final _confCtrl = TextEditingController();
   bool _loading = false;
-  bool _saved   = false;
+  bool _saved = false;
   String? _error;
 
   @override
@@ -837,7 +867,10 @@ class _PasswordSectionState extends ConsumerState<_PasswordSection> {
       _newCtrl.text == _confCtrl.text;
 
   Future<void> _save() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(profileProvider.notifier).changePassword(
             currentPassword: _currCtrl.text,
@@ -847,15 +880,26 @@ class _PasswordSectionState extends ConsumerState<_PasswordSection> {
         _currCtrl.clear();
         _newCtrl.clear();
         _confCtrl.clear();
-        setState(() { _saved = true; });
+        setState(() {
+          _saved = true;
+        });
         Future.delayed(const Duration(milliseconds: 2500), () {
-          if (mounted) setState(() { _saved = false; });
+          if (mounted)
+            setState(() {
+              _saved = false;
+            });
         });
       }
     } on AppException catch (e) {
-      if (mounted) setState(() { _error = e.message; });
+      if (mounted)
+        setState(() {
+          _error = e.message;
+        });
     } finally {
-      if (mounted) setState(() { _loading = false; });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     }
   }
 
@@ -930,8 +974,8 @@ class _DangerZone extends ConsumerStatefulWidget {
 
 class _DangerZoneState extends ConsumerState<_DangerZone> {
   bool _expanded = false;
-  final _pwCtrl  = TextEditingController();
-  bool _loading  = false;
+  final _pwCtrl = TextEditingController();
+  bool _loading = false;
   String? _error;
 
   @override
@@ -941,14 +985,21 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
   }
 
   Future<void> _delete() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       await ref.read(profileProvider.notifier).deleteAccount(_pwCtrl.text);
       if (mounted) {
         await ref.read(authProvider.notifier).logout();
       }
     } on AppException catch (e) {
-      if (mounted) setState(() { _error = e.message; _loading = false; });
+      if (mounted)
+        setState(() {
+          _error = e.message;
+          _loading = false;
+        });
     }
   }
 
@@ -962,8 +1013,7 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
         if (!_expanded) ...[
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded,
-                  color: _kRed, size: 16),
+              const Icon(Icons.warning_amber_rounded, color: _kRed, size: 16),
               const SizedBox(width: 8),
               const Expanded(
                 child: Column(
@@ -972,7 +1022,8 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
                     Text(
                       'Delete Account',
                       style: TextStyle(
-                        color: _kText, fontSize: 13,
+                        color: _kText,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -988,19 +1039,20 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
               GestureDetector(
                 onTap: () => setState(() => _expanded = true),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 7),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
                     color: _kRed.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                        color: _kRed.withValues(alpha: 0.4)),
+                    border: Border.all(color: _kRed.withValues(alpha: 0.4)),
                   ),
                   child: const Text(
                     'DELETE',
                     style: TextStyle(
-                      color: _kRed, fontSize: 10,
-                      fontWeight: FontWeight.w700, letterSpacing: 1,
+                      color: _kRed,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
                     ),
                   ),
                 ),
@@ -1024,12 +1076,11 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
               filled: true,
               fillColor: _kInput,
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: _kRed.withValues(alpha: 0.4)),
+                borderSide: BorderSide(color: _kRed.withValues(alpha: 0.4)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -1060,9 +1111,8 @@ class _DangerZoneState extends ConsumerState<_DangerZone> {
                   label: 'CONFIRM DELETE',
                   color: _kRed,
                   loading: _loading,
-                  onPressed: (_pwCtrl.text.isNotEmpty && !_loading)
-                      ? _delete
-                      : null,
+                  onPressed:
+                      (_pwCtrl.text.isNotEmpty && !_loading) ? _delete : null,
                 ),
               ),
             ],
@@ -1088,8 +1138,10 @@ class _Field extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: _kDim, fontSize: 10,
-            fontWeight: FontWeight.w700, letterSpacing: 1.2,
+            color: _kDim,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
           ),
         ),
         const SizedBox(height: 6),
@@ -1109,8 +1161,8 @@ class _ErrorText extends StatelessWidget {
           const Icon(Icons.error_outline, color: _kRed, size: 13),
           const SizedBox(width: 5),
           Expanded(
-            child: Text(text,
-                style: const TextStyle(color: _kRed, fontSize: 11)),
+            child:
+                Text(text, style: const TextStyle(color: _kRed, fontSize: 11)),
           ),
         ],
       );
@@ -1144,7 +1196,8 @@ class _DarkButton extends StatelessWidget {
               ? [
                   BoxShadow(
                     color: color.withValues(alpha: 0.25),
-                    blurRadius: 12, offset: const Offset(0, 3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
                   )
                 ]
               : null,
@@ -1152,18 +1205,20 @@ class _DarkButton extends StatelessWidget {
         child: Center(
           child: loading
               ? const SizedBox(
-                  width: 16, height: 16,
+                  width: 16,
+                  height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(_kBg),
+                    valueColor: AlwaysStoppedAnimation<Color>(_kBg),
                   ),
                 )
               : Text(
                   label,
                   style: const TextStyle(
-                    color: _kBg, fontSize: 11,
-                    fontWeight: FontWeight.w800, letterSpacing: 1.5,
+                    color: _kBg,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
                   ),
                 ),
         ),
@@ -1176,8 +1231,7 @@ class _OutlinedDarkButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
-  const _OutlinedDarkButton(
-      {required this.label, required this.onPressed});
+  const _OutlinedDarkButton({required this.label, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -1194,8 +1248,10 @@ class _OutlinedDarkButton extends StatelessWidget {
           child: Text(
             label,
             style: const TextStyle(
-              color: _kDim, fontSize: 11,
-              fontWeight: FontWeight.w700, letterSpacing: 1.5,
+              color: _kDim,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
             ),
           ),
         ),
