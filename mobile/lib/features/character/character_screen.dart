@@ -1,21 +1,22 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/character.dart';
 import '../../shared/widgets/error_view.dart';
 import 'character_provider.dart';
 
-// ── Solo Leveling "System" palette ───────────────────────────────────────────
-const _kManaBlue   = Color(0xFF3B82F6);
-const _kManaLight  = Color(0xFF60A5FA);
-const _kManaPurple = Color(0xFF7C3AED);
-const _kGold       = Color(0xFFEAB308);
-const _kBg         = Color(0xFF070B14);
-const _kSurface    = Color(0xFF0D1526);
-const _kBorder     = Color(0xFF1A2744);
-const _kText1      = Color(0xFFEEF2FF);
-const _kText2      = Color(0xFF6B7FBF);
+// ── Solo Leveling palette ─────────────────────────────────────────────────────
+const _kManaBlue   = Color(0xFF4FC3F7);
+const _kManaLight  = Color(0xFF4FC3F7);
+const _kManaPurple = Color(0xFF9B59B6);
+const _kGold       = Color(0xFFFFD700);
+const _kBg         = Color(0xFF0A0A0F);
+const _kSurface    = Color(0xFF1C1C2E);
+const _kBorder     = Color(0xFF2A2A3E);
+const _kText1      = Color(0xFFE2E8F0);
+const _kText2      = Color(0xFF64748B);
 
 const _kRanks = ['E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -87,7 +88,9 @@ class CharacterScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(characterProvider);
 
-    return Scaffold(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
       backgroundColor: _kBg,
       body: async.when(
         loading: () => const _LoadingView(),
@@ -128,6 +131,7 @@ class CharacterScreen extends ConsumerWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }
@@ -586,7 +590,7 @@ class _ManaBar extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF1D4ED8), Color(0xFF60A5FA)],
+                        colors: [Color(0xFF0288D1), _kManaBlue],
                       ),
                       boxShadow: [
                         BoxShadow(
