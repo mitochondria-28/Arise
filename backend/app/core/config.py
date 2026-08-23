@@ -29,12 +29,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.6-flash"
 
-    # CORS — store as JSON array in .env: ["http://localhost:5173"]
-    CORS_ORIGINS: list[str] = [
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://localhost:8080",
-    ]
+    # CORS — override with JSON array in .env e.g. ["https://app.example.com"]
+    # Defaults to ["*"] so the mobile app works without configuring origins.
+    CORS_ORIGINS: list[str] = ["*"]
 
     # Server
     BACKEND_HOST: str = "0.0.0.0"

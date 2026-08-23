@@ -1,16 +1,26 @@
+import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
+
+# Vercel serverless functions cannot hold persistent TCP connections between
+# invocations, so disable connection pooling when running on Vercel.
+_serverless = bool(os.getenv("VERCEL"))
 
 engine = create_async_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    **({
+        "poolclass": NullPool,
+    } if _serverless else {
+        "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+    }),
 )
 
 AsyncSessionLocal = async_sessionmaker(
