@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Override at build time: --dart-define=API_BASE_URL=<url>
 const rawBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://192.168.1.66:8000/api/v1',
+  defaultValue: 'https://backend-sooty-nine-25.vercel.app/api/v1',
 );
 
 // No auth interceptor — safe for auth_repository to import without cycle:
