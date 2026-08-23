@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 const _kRefreshToken = 'arise_refresh_token';
+const _kEmail = 'arise_email';
 
 class AuthStorage {
   final FlutterSecureStorage _storage;
@@ -19,9 +20,17 @@ class AuthStorage {
 
   Future<String?> getRefreshToken() => _storage.read(key: _kRefreshToken);
 
+  Future<void> saveEmail(String email) =>
+      _storage.write(key: _kEmail, value: email);
+
+  Future<String?> getEmail() => _storage.read(key: _kEmail);
+
   Future<void> clearAll() async {
     _accessToken = null;
-    await _storage.delete(key: _kRefreshToken);
+    await Future.wait([
+      _storage.delete(key: _kRefreshToken),
+      _storage.delete(key: _kEmail),
+    ]);
   }
 }
 

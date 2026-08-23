@@ -13,26 +13,44 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
     final storage = ref.read(authStorageProvider);
     final refreshToken = await storage.getRefreshToken();
+
     if (refreshToken == null) {
       state = state.copyWith(status: AuthStatus.unauthenticated);
       return;
     }
-    try {
-      final tokens = await ref.read(authRepositoryProvider).refresh(refreshToken);
-      storage.cacheAccessToken(tokens.accessToken);
-      await storage.saveRefreshToken(tokens.refreshToken);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        email: _decodeEmail(tokens.accessToken),
-      );
-    } on UnauthorizedException catch (_) {
-      // Token is genuinely invalid or expired — must log in again.
+
+    // Token is locally expired — no point trying the network.
+    if (_isTokenExpired(refreshToken)) {
       await storage.clearAll();
       state = state.copyWith(status: AuthStatus.unauthenticated);
+      return;
+    }
+
+    // Restore session immediately from local storage so the user never sees
+    // the login screen just because the network is slow or unavailable.
+    final cachedEmail = await storage.getEmail();
+    state = AuthState(status: AuthStatus.authenticated, email: cachedEmail);
+
+    // Silently exchange the refresh token for a fresh pair in the background.
+    try {
+      final tokens =
+          await ref.read(authRepositoryProvider).refresh(refreshToken);
+      storage.cacheAccessToken(tokens.accessToken);
+      await storage.saveRefreshToken(tokens.refreshToken);
+      final freshEmail = _decodeEmail(tokens.accessToken);
+      if (freshEmail != null) await storage.saveEmail(freshEmail);
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        email: freshEmail ?? cachedEmail,
+      );
+    } on UnauthorizedException catch (_) {
+      // Backend explicitly rejected the token — force re-login.
+      await storage.clearAll();
+      state = const AuthState(status: AuthStatus.unauthenticated);
     } catch (_) {
-      // Transient error (network down, server unreachable) — keep the token
-      // so the next app launch can retry rather than forcing re-login.
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      // Transient error (network down, server unreachable) — user stays
+      // authenticated with the cached session until their access token expires,
+      // at which point the auth interceptor will retry silentRefresh.
     }
   }
 
@@ -41,17 +59,13 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final tokens = await ref.read(authRepositoryProvider).login(email, password);
       final storage = ref.read(authStorageProvider);
+      final resolvedEmail = _decodeEmail(tokens.accessToken) ?? email;
       storage.cacheAccessToken(tokens.accessToken);
       await storage.saveRefreshToken(tokens.refreshToken);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        email: _decodeEmail(tokens.accessToken) ?? email,
-      );
+      await storage.saveEmail(resolvedEmail);
+      state = AuthState(status: AuthStatus.authenticated, email: resolvedEmail);
     } on AppException catch (e) {
-      state = AuthState(
-        status: AuthStatus.unauthenticated,
-        error: e.message,
-      );
+      state = AuthState(status: AuthStatus.unauthenticated, error: e.message);
     }
   }
 
@@ -60,17 +74,13 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final tokens = await ref.read(authRepositoryProvider).register(email, password);
       final storage = ref.read(authStorageProvider);
+      final resolvedEmail = _decodeEmail(tokens.accessToken) ?? email;
       storage.cacheAccessToken(tokens.accessToken);
       await storage.saveRefreshToken(tokens.refreshToken);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        email: _decodeEmail(tokens.accessToken) ?? email,
-      );
+      await storage.saveEmail(resolvedEmail);
+      state = AuthState(status: AuthStatus.authenticated, email: resolvedEmail);
     } on AppException catch (e) {
-      state = AuthState(
-        status: AuthStatus.unauthenticated,
-        error: e.message,
-      );
+      state = AuthState(status: AuthStatus.unauthenticated, error: e.message);
     }
   }
 
@@ -104,19 +114,28 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  String? _decodeEmail(String token) {
+  Map<String, dynamic>? _decodePayload(String token) {
     try {
       final parts = token.split('.');
       if (parts.length != 3) return null;
       var payload = parts[1];
-      // Pad to multiple of 4
       payload = payload.padRight((payload.length + 3) ~/ 4 * 4, '=');
       final decoded = utf8.decode(base64Decode(payload));
-      final map = jsonDecode(decoded) as Map<String, dynamic>;
-      return map['sub'] as String?;
+      return jsonDecode(decoded) as Map<String, dynamic>;
     } catch (_) {
       return null;
     }
+  }
+
+  String? _decodeEmail(String token) => _decodePayload(token)?['sub'] as String?;
+
+  bool _isTokenExpired(String token) {
+    final payload = _decodePayload(token);
+    if (payload == null) return true;
+    final exp = payload['exp'];
+    if (exp == null) return true;
+    final expiry = DateTime.fromMillisecondsSinceEpoch((exp as int) * 1000, isUtc: true);
+    return DateTime.now().toUtc().isAfter(expiry);
   }
 }
 
