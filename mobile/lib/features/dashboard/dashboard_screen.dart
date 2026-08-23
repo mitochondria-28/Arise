@@ -403,11 +403,32 @@ class _GreetingHeader extends StatelessWidget {
                     ),
                   ),
 
-                  // Logout button
-                  IconButton(
-                    onPressed: onLogout,
-                    icon: const Icon(Icons.logout_rounded, size: 20, color: _kText2),
-                    tooltip: 'Sign out',
+                  // Profile + Logout buttons
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.push('/profile'),
+                        child: Container(
+                          width: 38, height: 38,
+                          decoration: BoxDecoration(
+                            color: _kManaBlue.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: _kManaBlue.withValues(alpha: 0.3)),
+                          ),
+                          child: const Icon(Icons.person_outline_rounded,
+                              color: _kManaBlue, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      IconButton(
+                        onPressed: onLogout,
+                        icon: const Icon(Icons.logout_rounded,
+                            size: 20, color: _kText2),
+                        tooltip: 'Sign out',
+                      ),
+                    ],
                   )
                   .animate().fadeIn(delay: 200.ms),
                 ],
