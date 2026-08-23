@@ -1,7 +1,13 @@
 import axios from "axios";
 
+// In development the Vite proxy rewrites /api → localhost:8000, so the
+// relative fallback works. In production set VITE_API_BASE_URL to the
+// deployed backend (e.g. https://backend-sooty-nine-25.vercel.app/api/v1).
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
+
 export const apiClient = axios.create({
-  baseURL: "/api/v1",
+  baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -34,7 +40,7 @@ async function silentRefresh(): Promise<string> {
   const { data } = await axios.post<{
     access_token: string;
     refresh_token: string;
-  }>("/api/v1/auth/refresh", { refresh_token: stored });
+  }>(`${API_BASE}/auth/refresh`, { refresh_token: stored });
   setAccessToken(data.access_token);
   localStorage.setItem("arise-refresh-token", data.refresh_token);
   return data.access_token;

@@ -6,7 +6,7 @@ import {
   useReducer,
   type ReactNode,
 } from "react";
-import { setAccessToken } from "@/shared/api/client";
+import { setAccessToken, API_BASE } from "@/shared/api/client";
 import * as authApi from "./api";
 import axios from "axios";
 
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     axios
-      .post<{ access_token: string; refresh_token: string }>("/api/v1/auth/refresh", {
+      .post<{ access_token: string; refresh_token: string }>(`${API_BASE}/auth/refresh`, {
         refresh_token: stored,
       })
       .then(({ data }) => {
