@@ -2,9 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Keep in sync with _baseUrl in api_client.dart
+// Override at build time: --dart-define=API_BASE_URL=<url>
 const rawBaseUrl = String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://10.0.2.2:8000/api/v1',
+  defaultValue: 'http://192.168.1.67:8000/api/v1',
 );
 
 // No auth interceptor — safe for auth_repository to import without cycle:

@@ -25,8 +25,13 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.authenticated,
         email: _decodeEmail(tokens.accessToken),
       );
-    } catch (_) {
+    } on UnauthorizedException catch (_) {
+      // Token is genuinely invalid or expired — must log in again.
       await storage.clearAll();
+      state = state.copyWith(status: AuthStatus.unauthenticated);
+    } catch (_) {
+      // Transient error (network down, server unreachable) — keep the token
+      // so the next app launch can retry rather than forcing re-login.
       state = state.copyWith(status: AuthStatus.unauthenticated);
     }
   }
