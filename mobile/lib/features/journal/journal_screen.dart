@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../core/errors/app_exception.dart';
 import '../../core/models/journal.dart';
-import '../../shared/widgets/arise_card.dart';
 import '../../shared/widgets/arise_button.dart';
 import '../../shared/widgets/error_view.dart';
 import 'journal_provider.dart';
 
-// ── Mood helpers ───────────────────────────────────────────────────────────────
+// ── Solo Leveling palette ──────────────────────────────────────────────────────
+const _kBg     = Color(0xFF0A0A0F);
+const _kCard   = Color(0xFF1C1C2E);
+const _kBorder = Color(0xFF2A2A3E);
+const _kBlue   = Color(0xFF4FC3F7);
+const _kPurple = Color(0xFF9B59B6);
+const _kOrange = Color(0xFFF97316);
+const _kText   = Color(0xFFE2E8F0);
+const _kDim    = Color(0xFF64748B);
 
+// ── Mood helpers ───────────────────────────────────────────────────────────────
 const _moods = [
   (value: 1, emoji: '😔', label: 'Low'),
   (value: 2, emoji: '😕', label: 'Below average'),
@@ -19,7 +28,6 @@ const _moods = [
 ];
 
 // ── Screen ─────────────────────────────────────────────────────────────────────
-
 class JournalScreen extends ConsumerStatefulWidget {
   const JournalScreen({super.key});
 
@@ -64,131 +72,230 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   @override
   Widget build(BuildContext context) {
     final listAsync = ref.watch(journalProvider);
-    final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Journal'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit_outlined),
-            onPressed: _todayLoaded ? _showEditor : null,
-            tooltip: "Today's entry",
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: _kBg,
+        body: listAsync.when(
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: _kBlue, strokeWidth: 2),
           ),
-        ],
-      ),
-      body: listAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorView(
-          message: e.toString(),
-          onRetry: () => ref.read(journalProvider.notifier).refresh(),
-        ),
-        data: (list) {
-          final today = DateTime.now().toIso8601String().split('T').first;
-          final past = list.entries.where((e) => e.entryDate != today).toList();
+          error: (e, _) => ErrorView(
+            message: e.toString(),
+            onRetry: () => ref.read(journalProvider.notifier).refresh(),
+          ),
+          data: (list) {
+            final today = DateTime.now().toIso8601String().split('T').first;
+            final past  = list.entries.where((e) => e.entryDate != today).toList();
 
-          return RefreshIndicator(
-            onRefresh: () async {
-              await ref.read(journalProvider.notifier).refresh();
-              await _loadToday();
-            },
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                // Streak + summary
-                AriseCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${list.total} ${list.total == 1 ? "entry" : "entries"}',
-                              style: Theme.of(context).textTheme.titleMedium,
+            return RefreshIndicator(
+              color: _kBlue,
+              backgroundColor: _kCard,
+              onRefresh: () async {
+                await ref.read(journalProvider.notifier).refresh();
+                await _loadToday();
+              },
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _JournalHeader(
+                      total: list.total,
+                      streak: list.streak,
+                      onWrite: _todayLoaded ? _showEditor : null,
+                    ).animate().fadeIn(duration: 350.ms),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _FieldLabel('TODAY\'S ENTRY', _kBlue),
+                          const SizedBox(height: 10),
+                          if (!_todayLoaded)
+                            _LoadingCard()
+                          else
+                            _TodayCard(
+                              entry: _todayEntry,
+                              onTap: _showEditor,
+                              onReflectionGenerated: (entry) =>
+                                  setState(() => _todayEntry = entry),
                             ),
-                            Text(
-                              'in your journal',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: cs.onSurface.withValues(alpha: 0.45),
-                                  ),
-                            ),
-                          ],
+                        ],
+                      ),
+                    ).animate().fadeIn(delay: 100.ms, duration: 350.ms),
+                  ),
+                  if (past.isNotEmpty)
+                    const SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                        child: _FieldLabel('PAST ENTRIES', _kDim),
+                      ),
+                    ),
+                  if (past.isNotEmpty)
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 120),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (_, i) => Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _PastEntryCard(entry: past[i])
+                                .animate()
+                                .fadeIn(delay: (i * 40).ms, duration: 250.ms),
+                          ),
+                          childCount: past.length,
                         ),
                       ),
-                      if (list.streak > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF97316).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: const Color(0xFFF97316)
-                                    .withValues(alpha: 0.4)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.local_fire_department,
-                                  color: Color(0xFFF97316), size: 18),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${list.streak}',
-                                style: const TextStyle(
-                                  color: Color(0xFFF97316),
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 18,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Today's entry card
-                if (!_todayLoaded)
-                  const SizedBox(
-                    height: 80,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                else
-                  _TodayCard(
-                    entry: _todayEntry,
-                    onTap: _showEditor,
-                    onReflectionGenerated: (entry) =>
-                        setState(() => _todayEntry = entry),
-                  ),
-                const SizedBox(height: 20),
-
-                // Past entries
-                if (past.isNotEmpty) ...[
-                  Text(
-                    'Past Entries',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.5),
-                        ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...past.asMap().entries.map((e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _PastEntryCard(entry: e.value),
-                      ).animate().fadeIn(delay: (e.key * 40).ms, duration: 250.ms)),
+                    ),
                 ],
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 }
 
-// ── Today card ─────────────────────────────────────────────────────────────────
+// ── Journal Header ─────────────────────────────────────────────────────────────
+class _JournalHeader extends StatelessWidget {
+  final int total;
+  final int streak;
+  final VoidCallback? onWrite;
 
+  const _JournalHeader({required this.total, required this.streak, this.onWrite});
+
+  @override
+  Widget build(BuildContext context) {
+    final top = MediaQuery.of(context).padding.top;
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, top + 14, 16, 18),
+      decoration: const BoxDecoration(
+        color: _kCard,
+        border: Border(bottom: BorderSide(color: _kBorder, width: 1)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(width: 5, height: 5, decoration: const BoxDecoration(color: _kBlue, shape: BoxShape.circle)),
+                    const SizedBox(width: 6),
+                    const Text('FIELD NOTES', style: TextStyle(color: _kBlue, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 2.5)),
+                    const SizedBox(width: 6),
+                    Container(width: 5, height: 5, decoration: const BoxDecoration(color: _kBlue, shape: BoxShape.circle)),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                const Text('Hunter\'s Journal', style: TextStyle(color: _kText, fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _StatChip(label: 'ENTRIES', value: '$total', color: _kBlue),
+                    if (streak > 0) ...[
+                      const SizedBox(width: 10),
+                      _StatChip(label: 'STREAK', value: '$streak 🔥', color: _kOrange),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onWrite,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color: _kBlue.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _kBlue.withValues(alpha: 0.4)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.edit_outlined, color: _kBlue, size: 15),
+                  SizedBox(width: 6),
+                  Text('WRITE', style: TextStyle(color: _kBlue, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _StatChip({required this.label, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(value, style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.w700)),
+          const SizedBox(width: 5),
+          Text(label, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w600, letterSpacing: 1)),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Field label ────────────────────────────────────────────────────────────────
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _FieldLabel(this.text, this.color);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 3, height: 14,
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+        ),
+        const SizedBox(width: 8),
+        Text(text, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 2)),
+      ],
+    );
+  }
+}
+
+// ── Loading card ───────────────────────────────────────────────────────────────
+class _LoadingCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: _kCard, borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kBorder),
+      ),
+      child: const Center(child: CircularProgressIndicator(color: _kBlue, strokeWidth: 2)),
+    );
+  }
+}
+
+// ── Today card ─────────────────────────────────────────────────────────────────
 class _TodayCard extends ConsumerStatefulWidget {
   final JournalEntry? entry;
   final VoidCallback onTap;
@@ -226,171 +333,158 @@ class _TodayCardState extends ConsumerState<_TodayCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final entry = widget.entry;
-    final today = DateTime.now();
-    final dateStr =
-        '${_weekday(today.weekday)}, ${_month(today.month)} ${today.day}';
+    final entry   = widget.entry;
+    final today   = DateTime.now();
+    final dateStr = '${_weekday(today.weekday)}, ${_month(today.month)} ${today.day}';
 
-    return AriseCard(
+    return GestureDetector(
       onTap: widget.onTap,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Today",
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: cs.primary,
-                        ),
-                  ),
-                  Text(
-                    dateStr,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.4),
-                        ),
-                  ),
-                ],
-              ),
-              if (entry == null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: cs.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Write',
-                    style: TextStyle(
-                        color: cs.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
-                  ),
-                )
-              else if (entry.mood != null)
-                Text(
-                  _moods.firstWhere((m) => m.value == entry.mood,
-                          orElse: () => _moods[2])
-                      .emoji,
-                  style: const TextStyle(fontSize: 22),
-                ),
-            ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: entry != null ? _kBlue.withValues(alpha: 0.4) : _kBorder,
           ),
-          const SizedBox(height: 12),
-
-          if (entry == null) ...[
-            Text(
-              "Tap to write today's entry",
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurface.withValues(alpha: 0.35),
-                    fontStyle: FontStyle.italic,
-                  ),
-            ),
-          ] else ...[
-            Text(
-              entry.content.length > 200
-                  ? '${entry.content.substring(0, 200)}…'
-                  : entry.content,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurface.withValues(alpha: 0.75),
-                  ),
-            ),
-            const SizedBox(height: 12),
-
-            // AI reflection
-            if (entry.hasReflection) ...[
+          boxShadow: entry != null
+              ? [BoxShadow(color: _kBlue.withValues(alpha: 0.08), blurRadius: 12)]
+              : null,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(11),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.06),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
+                  color: _kBlue.withValues(alpha: 0.06),
+                  border: const Border(bottom: BorderSide(color: _kBorder)),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.auto_awesome, color: cs.primary, size: 13),
-                        const SizedBox(width: 5),
-                        Text(
-                          'AI Reflection',
-                          style: TextStyle(
-                            color: cs.primary,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                          ),
+                    const Icon(Icons.today_outlined, color: _kBlue, size: 14),
+                    const SizedBox(width: 6),
+                    const Text('TODAY', style: TextStyle(color: _kBlue, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 2)),
+                    const SizedBox(width: 8),
+                    Text(dateStr, style: const TextStyle(color: _kDim, fontSize: 10)),
+                    const Spacer(),
+                    if (entry?.mood != null)
+                      Text(
+                        _moods.firstWhere((m) => m.value == entry!.mood, orElse: () => _moods[2]).emoji,
+                        style: const TextStyle(fontSize: 18),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: _kBlue.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: _kBlue.withValues(alpha: 0.3)),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      entry.aiReflection!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onSurface.withValues(alpha: 0.7),
-                          ),
-                    ),
+                        child: const Text('WRITE', style: TextStyle(color: _kBlue, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                      ),
                   ],
                 ),
               ),
-            ] else ...[
-              if (_reflectionError != null)
-                Text(
-                  _reflectionError!,
-                  style: TextStyle(
-                      color: cs.onSurface.withValues(alpha: 0.4), fontSize: 11),
-                ),
-              SizedBox(
-                height: 34,
-                child: OutlinedButton.icon(
-                  onPressed: _reflectionLoading ? null : _generateReflection,
-                  icon: _reflectionLoading
-                      ? SizedBox(
-                          width: 13,
-                          height: 13,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 1.5, color: cs.primary),
-                        )
-                      : Icon(Icons.auto_awesome, size: 14, color: cs.primary),
-                  label: Text(
-                    _reflectionLoading ? 'Generating…' : 'Get AI Reflection',
-                    style: TextStyle(fontSize: 12, color: cs.primary),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    side: BorderSide(color: cs.primary.withValues(alpha: 0.4)),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (entry == null)
+                      const Text(
+                        'Tap to write today\'s entry…',
+                        style: TextStyle(color: _kDim, fontSize: 14, fontStyle: FontStyle.italic),
+                      )
+                    else ...[
+                      Text(
+                        entry.content.length > 200
+                            ? '${entry.content.substring(0, 200)}…'
+                            : entry.content,
+                        style: TextStyle(color: _kText.withValues(alpha: 0.85), fontSize: 13, height: 1.5),
+                      ),
+                      const SizedBox(height: 12),
+                      if (entry.hasReflection) ...[
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _kPurple.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: _kPurple.withValues(alpha: 0.25)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.auto_awesome, color: _kPurple, size: 12),
+                                  SizedBox(width: 5),
+                                  Text('AI REFLECTION', style: TextStyle(color: _kPurple, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(entry.aiReflection!, style: TextStyle(color: _kText.withValues(alpha: 0.75), fontSize: 12, height: 1.5)),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        if (_reflectionError != null) ...[
+                          Text(_reflectionError!, style: const TextStyle(color: _kDim, fontSize: 11)),
+                          const SizedBox(height: 8),
+                        ],
+                        GestureDetector(
+                          onTap: _reflectionLoading ? null : _generateReflection,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: _kPurple.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _kPurple.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (_reflectionLoading)
+                                  const SizedBox(
+                                    width: 12, height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 1.5, color: _kPurple),
+                                  )
+                                else
+                                  const Icon(Icons.auto_awesome, size: 12, color: _kPurple),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _reflectionLoading ? 'GENERATING…' : 'GET AI REFLECTION',
+                                  style: const TextStyle(color: _kPurple, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ],
                 ),
               ),
             ],
-          ],
-        ],
+          ),
+        ),
       ),
     );
   }
 
   String _weekday(int d) {
-    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days[(d - 1) % 7];
   }
 
   String _month(int m) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[m - 1];
   }
 }
 
 // ── Past entry card ─────────────────────────────────────────────────────────────
-
 class _PastEntryCard extends StatefulWidget {
   final JournalEntry entry;
 
@@ -405,7 +499,6 @@ class _PastEntryCardState extends State<_PastEntryCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final e = widget.entry;
     final parts = e.entryDate.split('-');
     final dateLabel = parts.length == 3 ? '${parts[2]}/${parts[1]}' : e.entryDate;
@@ -413,101 +506,81 @@ class _PastEntryCardState extends State<_PastEntryCard> {
         ? _moods.firstWhere((m) => m.value == e.mood, orElse: () => _moods[2])
         : null;
 
-    return AriseCard(
+    return GestureDetector(
       onTap: () => setState(() => _expanded = !_expanded),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  dateLabel,
-                  style: TextStyle(
-                    color: cs.primary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+      child: Container(
+        decoration: BoxDecoration(
+          color: _kCard,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _expanded ? _kBlue.withValues(alpha: 0.3) : _kBorder),
+        ),
+        padding: const EdgeInsets.all(13),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _kBlue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(color: _kBlue.withValues(alpha: 0.2)),
                   ),
-                  textAlign: TextAlign.center,
+                  child: Text(dateLabel, style: const TextStyle(color: _kBlue, fontSize: 10, fontWeight: FontWeight.w700)),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  _expanded
-                      ? e.content
-                      : (e.content.length > 100
-                          ? '${e.content.substring(0, 100)}…'
-                          : e.content),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: cs.onSurface.withValues(alpha: 0.65),
-                      ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _expanded
+                        ? e.content
+                        : (e.content.length > 100 ? '${e.content.substring(0, 100)}…' : e.content),
+                    style: TextStyle(color: _kText.withValues(alpha: 0.75), fontSize: 12, height: 1.4),
+                  ),
                 ),
-              ),
-              if (mood != null) ...[
-                const SizedBox(width: 6),
-                Text(mood.emoji, style: const TextStyle(fontSize: 16)),
+                if (mood != null) ...[
+                  const SizedBox(width: 6),
+                  Text(mood.emoji, style: const TextStyle(fontSize: 16)),
+                ],
+                const SizedBox(width: 4),
+                Icon(_expanded ? Icons.expand_less : Icons.expand_more, size: 16, color: _kDim),
               ],
-              const SizedBox(width: 4),
-              Icon(
-                _expanded ? Icons.expand_less : Icons.expand_more,
-                size: 18,
-                color: cs.onSurface.withValues(alpha: 0.3),
+            ),
+            if (_expanded && e.hasReflection) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _kPurple.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: _kPurple.withValues(alpha: 0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.auto_awesome, color: _kPurple, size: 10),
+                        SizedBox(width: 4),
+                        Text('AI REFLECTION', style: TextStyle(color: _kPurple, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(e.aiReflection!, style: TextStyle(color: _kText.withValues(alpha: 0.65), fontSize: 11, height: 1.4)),
+                  ],
+                ),
               ),
             ],
-          ),
-          if (_expanded && e.hasReflection) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: cs.primary.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: cs.primary.withValues(alpha: 0.15)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.auto_awesome, color: cs.primary, size: 11),
-                      const SizedBox(width: 4),
-                      Text(
-                        'AI Reflection',
-                        style: TextStyle(
-                          color: cs.primary,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    e.aiReflection!,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.6),
-                        ),
-                  ),
-                ],
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
-// ── Editor sheet ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// EDITOR SHEET — preserved exactly
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _EditorSheet extends ConsumerStatefulWidget {
   final JournalEntry? initial;
@@ -581,8 +654,7 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
             const SizedBox(height: 8),
             Center(
               child: Container(
-                width: 36,
-                height: 4,
+                width: 36, height: 4,
                 decoration: BoxDecoration(
                   color: cs.onSurface.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(2),
@@ -593,8 +665,7 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("Today's Entry",
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text("Today's Entry", style: Theme.of(context).textTheme.titleLarge),
                 Text(
                   '$wordCount words',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -604,8 +675,6 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
               ],
             ),
             const SizedBox(height: 16),
-
-            // Mood picker
             Text('Mood', style: Theme.of(context).textTheme.labelLarge),
             const SizedBox(height: 8),
             Row(
@@ -613,8 +682,7 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
                 final isSelected = _mood == m.value;
                 return Expanded(
                   child: GestureDetector(
-                    onTap: () => setState(
-                        () => _mood = isSelected ? null : m.value),
+                    onTap: () => setState(() => _mood = isSelected ? null : m.value),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 150),
                       margin: const EdgeInsets.only(right: 6),
@@ -630,16 +698,13 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
                               : Colors.transparent,
                         ),
                       ),
-                      child: Text(m.emoji,
-                          style: const TextStyle(fontSize: 20),
-                          textAlign: TextAlign.center),
+                      child: Text(m.emoji, style: const TextStyle(fontSize: 20), textAlign: TextAlign.center),
                     ),
                   ),
                 );
               }).toList(),
             ),
             const SizedBox(height: 16),
-
             if (_error != null) ...[
               Container(
                 padding: const EdgeInsets.all(10),
@@ -647,13 +712,10 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
                   color: cs.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(_error!,
-                    style: TextStyle(color: cs.error, fontSize: 13)),
+                child: Text(_error!, style: TextStyle(color: cs.error, fontSize: 13)),
               ),
               const SizedBox(height: 12),
             ],
-
-            // Content
             TextField(
               controller: _ctrl,
               maxLines: 12,
@@ -661,14 +723,11 @@ class _EditorSheetState extends ConsumerState<_EditorSheet> {
               textCapitalization: TextCapitalization.sentences,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText:
-                    'What happened today? What did you do, learn, or feel? Be honest and specific…',
-                hintStyle: TextStyle(
-                    color: cs.onSurface.withValues(alpha: 0.3), fontSize: 14),
+                hintText: 'What happened today? What did you do, learn, or feel? Be honest and specific…',
+                hintStyle: TextStyle(color: cs.onSurface.withValues(alpha: 0.3), fontSize: 14),
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: cs.onSurface.withValues(alpha: 0.15))),
+                    borderSide: BorderSide(color: cs.onSurface.withValues(alpha: 0.15))),
                 alignLabelWithHint: true,
                 contentPadding: const EdgeInsets.all(14),
               ),
