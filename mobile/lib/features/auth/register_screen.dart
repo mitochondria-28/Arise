@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
-import '../../core/auth/auth_state.dart';
 import '../../shared/widgets/arise_button.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -18,6 +17,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscure = true;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -29,16 +29,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref
-        .read(authProvider.notifier)
-        .register(_emailCtrl.text.trim(), _passCtrl.text);
+    setState(() => _loading = true);
+    try {
+      await ref
+          .read(authProvider.notifier)
+          .register(_emailCtrl.text.trim(), _passCtrl.text);
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final auth = ref.watch(authProvider);
-    final isLoading = auth.status == AuthStatus.loading;
+    final isLoading = _loading;
 
     return Scaffold(
       body: SafeArea(
