@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/errors/app_exception.dart';
+import '../../core/models/skill.dart';
 import '../../core/theme/theme_provider.dart';
+import '../skills/skill_provider.dart';
 import 'profile_provider.dart';
 
 // ── Solo Leveling palette ──────────────────────────────────────────────────────
@@ -109,6 +111,10 @@ class ProfileScreen extends ConsumerWidget {
                           .animate()
                           .fadeIn(duration: 350.ms),
                       const SizedBox(height: 14),
+                      const _SkillsSection()
+                          .animate()
+                          .fadeIn(delay: 60.ms, duration: 350.ms),
+                      const SizedBox(height: 14),
                       if (me.profile != null)
                         _ProfileSection(
                           displayName: me.profile!.displayName,
@@ -117,19 +123,19 @@ class ProfileScreen extends ConsumerWidget {
                           themePreference:
                               me.profile!.themePreference,
                         ).animate().fadeIn(
-                            delay: 80.ms, duration: 350.ms)
+                            delay: 120.ms, duration: 350.ms)
                       else
                         const _NoProfileCard()
                             .animate()
-                            .fadeIn(delay: 80.ms, duration: 350.ms),
+                            .fadeIn(delay: 120.ms, duration: 350.ms),
                       const SizedBox(height: 14),
                       const _PasswordSection()
                           .animate()
-                          .fadeIn(delay: 160.ms, duration: 350.ms),
+                          .fadeIn(delay: 200.ms, duration: 350.ms),
                       const SizedBox(height: 14),
                       const _DangerZone()
                           .animate()
-                          .fadeIn(delay: 240.ms, duration: 350.ms),
+                          .fadeIn(delay: 280.ms, duration: 350.ms),
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -257,6 +263,274 @@ class _SectionCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Skills section ─────────────────────────────────────────────────────────────
+const _kSkillColors = {
+  'vitality':     Color(0xFFEF4444),
+  'strength':     Color(0xFFE67E22),
+  'intelligence': Color(0xFF3B82F6),
+  'wisdom':       Color(0xFFA855F7),
+  'charisma':     Color(0xFFEAB308),
+  'discipline':   Color(0xFF22C55E),
+};
+
+Color _skillColor(String cat) => _kSkillColors[cat] ?? const Color(0xFF64748B);
+
+class _SkillsSection extends ConsumerWidget {
+  const _SkillsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(userSkillsProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section tag + count + nav button
+          Row(
+            children: [
+              Container(
+                width: 4, height: 4,
+                decoration: const BoxDecoration(
+                    color: _kGreen, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 7),
+              const Text(
+                'SKILLS',
+                style: TextStyle(
+                  color: _kGreen, fontSize: 9,
+                  fontWeight: FontWeight.w700, letterSpacing: 2.5,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => context.go('/skills'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _kGreen.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                        color: _kGreen.withValues(alpha: 0.3)),
+                  ),
+                  child: const Text(
+                    'VIEW ALL',
+                    style: TextStyle(
+                      color: _kGreen, fontSize: 9,
+                      fontWeight: FontWeight.w700, letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Skills content
+          async.when(
+            loading: () => const SizedBox(
+              height: 64,
+              child: Center(
+                child: CircularProgressIndicator(
+                    color: _kGreen, strokeWidth: 2),
+              ),
+            ),
+            error: (_, __) => const SizedBox(
+              height: 40,
+              child: Center(
+                child: Text(
+                  'Could not load skills.',
+                  style: TextStyle(color: _kDim, fontSize: 12),
+                ),
+              ),
+            ),
+            data: (skills) {
+              if (skills.isEmpty) {
+                return GestureDetector(
+                  onTap: () => context.go('/skills'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: _kGreen.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: _kGreen.withValues(alpha: 0.2)),
+                          ),
+                          child: const Icon(Icons.bolt_outlined,
+                              color: _kGreen, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'No skills unlocked yet',
+                                style: TextStyle(
+                                  color: _kText, fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Visit the Skill Tree to unlock your first skill',
+                                style: TextStyle(
+                                    color: _kDim, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            color: _kDim, size: 13),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              // Up to 6 skills shown as compact tiles
+              final preview = skills.length > 6 ? skills.sublist(0, 6) : skills;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 82,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: preview.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      itemBuilder: (_, i) =>
+                          _SkillTile(us: preview[i]),
+                    ),
+                  ),
+                  if (skills.length > 1) ...[
+                    const SizedBox(height: 14),
+                    // Summary row: total sessions + total XP
+                    Row(
+                      children: [
+                        _SkillStat(
+                          icon: Icons.bolt_rounded,
+                          color: _kGreen,
+                          label: '${skills.fold(0, (s, e) => s + e.totalXpEarned)} total XP',
+                        ),
+                        const SizedBox(width: 16),
+                        _SkillStat(
+                          icon: Icons.repeat_rounded,
+                          color: _kBlue,
+                          label: '${skills.fold(0, (s, e) => s + e.sessionCount)} sessions',
+                        ),
+                        const Spacer(),
+                        if (skills.length > 6)
+                          Text(
+                            '+${skills.length - 6} more',
+                            style: const TextStyle(
+                                color: _kDim, fontSize: 11),
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkillTile extends StatelessWidget {
+  final UserSkillResponse us;
+  const _SkillTile({required this.us});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _skillColor(us.skill.category);
+    final pct = (us.level / 10).clamp(0.0, 1.0);
+
+    return Container(
+      width: 74,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Level ring + emoji
+          SizedBox(
+            width: 36, height: 36,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: pct,
+                  strokeWidth: 2.5,
+                  backgroundColor: color.withValues(alpha: 0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+                Text(us.skill.emoji,
+                    style: const TextStyle(fontSize: 14)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            us.skill.name,
+            style: const TextStyle(
+              color: _kText, fontSize: 9,
+              fontWeight: FontWeight.w600,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Lv ${us.level}',
+            style: TextStyle(
+              color: color, fontSize: 9,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SkillStat extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  const _SkillStat(
+      {required this.icon, required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 13),
+          const SizedBox(width: 4),
+          Text(label,
+              style: const TextStyle(color: _kDim, fontSize: 11)),
+        ],
+      );
 }
 
 // ── Account card ───────────────────────────────────────────────────────────────
