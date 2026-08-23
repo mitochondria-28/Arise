@@ -227,17 +227,68 @@ class _SplashScreenState extends State<_SplashScreen>
   }
 }
 
+// ── Tab descriptor ─────────────────────────────────────────────────────────────
+class _Tab {
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final String path;
+  final Color color;
+  const _Tab({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.path,
+    required this.color,
+  });
+}
+
+// ── App shell with custom dark nav bar ─────────────────────────────────────────
 class _AppShell extends StatelessWidget {
   final Widget child;
 
   const _AppShell({required this.child});
 
+  static const _kNavBg     = Color(0xFF0D0D1A);
+  static const _kNavBorder = Color(0xFF2A2A3E);
+  static const _kNavDim    = Color(0xFF4A5568);
+
   static const _tabs = [
-    (icon: Icons.home_outlined, label: 'Home', path: '/dashboard'),
-    (icon: Icons.task_alt_outlined, label: 'Missions', path: '/missions'),
-    (icon: Icons.book_outlined, label: 'Journal', path: '/journal'),
-    (icon: Icons.emoji_events_outlined, label: 'Awards', path: '/achievements'),
-    (icon: Icons.person_outline, label: 'Hunter', path: '/character'),
+    _Tab(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'HOME',
+      path: '/dashboard',
+      color: Color(0xFF4FC3F7),
+    ),
+    _Tab(
+      icon: Icons.task_alt_outlined,
+      activeIcon: Icons.task_alt_rounded,
+      label: 'MISSIONS',
+      path: '/missions',
+      color: Color(0xFFF97316),
+    ),
+    _Tab(
+      icon: Icons.book_outlined,
+      activeIcon: Icons.book_rounded,
+      label: 'JOURNAL',
+      path: '/journal',
+      color: Color(0xFF9B59B6),
+    ),
+    _Tab(
+      icon: Icons.emoji_events_outlined,
+      activeIcon: Icons.emoji_events_rounded,
+      label: 'AWARDS',
+      path: '/achievements',
+      color: Color(0xFFFFD700),
+    ),
+    _Tab(
+      icon: Icons.person_outline,
+      activeIcon: Icons.person_rounded,
+      label: 'HUNTER',
+      path: '/character',
+      color: Color(0xFF34D399),
+    ),
   ];
 
   int _currentIndex(BuildContext context) {
@@ -248,15 +299,82 @@ class _AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final current = _currentIndex(context);
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+
     return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0F),
       body: child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex(context),
-        onDestinationSelected: (i) => context.go(_tabs[i].path),
-        destinations: _tabs
-            .map((t) =>
-                NavigationDestination(icon: Icon(t.icon), label: t.label))
-            .toList(),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: _kNavBg,
+          border: Border(top: BorderSide(color: _kNavBorder)),
+        ),
+        padding: EdgeInsets.only(bottom: bottomPad),
+        child: SizedBox(
+          height: 58,
+          child: Row(
+            children: List.generate(_tabs.length, (i) {
+              final tab = _tabs[i];
+              final isActive = i == current;
+
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => context.go(tab.path),
+                  behavior: HitTestBehavior.opaque,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      // Glowing top-indicator line
+                      Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                          height: 2,
+                          width: isActive ? 22.0 : 0.0,
+                          decoration: BoxDecoration(
+                            color: tab.color,
+                            borderRadius: const BorderRadius.vertical(
+                              bottom: Radius.circular(2),
+                            ),
+                            boxShadow: isActive
+                                ? [
+                                    BoxShadow(
+                                      color: tab.color.withValues(alpha: 0.7),
+                                      blurRadius: 8,
+                                    )
+                                  ]
+                                : null,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 9),
+                      // Icon
+                      Icon(
+                        isActive ? tab.activeIcon : tab.icon,
+                        size: 21,
+                        color: isActive ? tab.color : _kNavDim,
+                      ),
+                      const SizedBox(height: 3),
+                      // Label
+                      Text(
+                        tab.label,
+                        style: TextStyle(
+                          color: isActive ? tab.color : _kNavDim,
+                          fontSize: 8,
+                          fontWeight: isActive
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }
