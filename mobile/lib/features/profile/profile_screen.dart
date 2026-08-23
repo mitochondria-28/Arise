@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/errors/app_exception.dart';
+import '../../core/theme/theme_provider.dart';
 import 'profile_provider.dart';
 
 // ── Solo Leveling palette ──────────────────────────────────────────────────────
@@ -481,7 +482,10 @@ class _ProfileSectionState extends ConsumerState<_ProfileSection> {
                 child: Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: GestureDetector(
-                    onTap: () => setState(() => _theme = t),
+                    onTap: () {
+                      setState(() => _theme = t);
+                      ref.read(themeProvider.notifier).setTheme(t);
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(vertical: 9),

@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/auth/auth_provider.dart';
 import 'core/routing/router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: AriseApp()));
+  final prefs = await SharedPreferences.getInstance();
+  final savedPref = prefs.getString('arise_theme_pref') ?? 'system';
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        themeProvider.overrideWith(() => ThemeNotifier(savedPref)),
+      ],
+      child: const AriseApp(),
+    ),
+  );
 }
 
 class AriseApp extends ConsumerWidget {
@@ -14,17 +26,16 @@ class AriseApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Reading authInitProvider here ensures initialization starts on first build.
-    // The router watches it via _AuthChangeNotifier and redirects accordingly.
     ref.watch(authInitProvider);
-    final router = ref.watch(routerProvider);
+    final router    = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
       title: 'Arise',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: router,
     );
   }
