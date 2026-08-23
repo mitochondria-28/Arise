@@ -32,7 +32,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           authInitState.isLoading || authState.status == AuthStatus.initial;
       if (isInitializing) {
         return state.uri.path == '/splash' ? null : '/splash';
-      }
+      } 
 
       final loc = state.uri.path;
       final isAuthenticated = authState.isAuthenticated;
@@ -266,7 +266,7 @@ class _AppShell extends StatelessWidget {
       activeIcon: Icons.task_alt_rounded,
       label: 'MISSIONS',
       path: '/missions',
-      color: Color(0xFFF97316),
+      color: Color(0xFF14B8A6),
     ),
     _Tab(
       icon: Icons.book_outlined,

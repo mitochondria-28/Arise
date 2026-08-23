@@ -26,7 +26,7 @@ Color _rankColor(String rank) {
     case 'D': return const Color(0xFF22C55E);
     case 'C': return const Color(0xFF3B82F6);
     case 'B': return const Color(0xFFA855F7);
-    case 'A': return const Color(0xFFF97316);
+    case 'A': return const Color(0xFFE67E22);
     case 'S': return const Color(0xFFEF4444);
     default:  return const Color(0xFF6B7280);
   }
@@ -59,7 +59,7 @@ IconData _statIcon(String stat) {
 Color _statColor(String stat) {
   switch (stat) {
     case 'vitality':     return const Color(0xFFEF4444);
-    case 'strength':     return const Color(0xFFF97316);
+    case 'strength':     return const Color(0xFFE67E22);
     case 'intelligence': return const Color(0xFF3B82F6);
     case 'wisdom':       return const Color(0xFFA855F7);
     case 'charisma':     return const Color(0xFFEAB308);

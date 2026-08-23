@@ -9,12 +9,12 @@ import 'skill_provider.dart';
 // ── Category colours ───────────────────────────────────────────────────────────
 
 const _catColor = {
-  'vitality':     Color(0xFF22C55E),
-  'strength':     Color(0xFFEF4444),
+  'vitality':     Color(0xFFEF4444),
+  'strength':     Color(0xFFE67E22),
   'intelligence': Color(0xFF3B82F6),
   'wisdom':       Color(0xFFA855F7),
-  'charisma':     Color(0xFFEC4899),
-  'discipline':   Color(0xFFF97316),
+  'charisma':     Color(0xFFEAB308),
+  'discipline':   Color(0xFF22C55E),
 };
 
 Color _color(String cat) => _catColor[cat] ?? const Color(0xFF6B7280);

@@ -14,7 +14,7 @@ const _kCard   = Color(0xFF1C1C2E);
 const _kBorder = Color(0xFF2A2A3E);
 const _kBlue   = Color(0xFF4FC3F7);
 const _kPurple = Color(0xFF9B59B6);
-const _kOrange = Color(0xFFF97316);
+const _kOrange = Color(0xFFE67E22);
 const _kText   = Color(0xFFE2E8F0);
 const _kDim    = Color(0xFF64748B);
 

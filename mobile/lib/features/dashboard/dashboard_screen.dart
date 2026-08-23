@@ -22,7 +22,7 @@ const _kManaLight  = Color(0xFF60A5FA);
 const _kManaPurple = Color(0xFF7C3AED);
 const _kGold       = Color(0xFFEAB308);
 const _kRed        = Color(0xFFEF4444);
-const _kOrange     = Color(0xFFF97316);
+const _kOrange     = Color(0xFFE67E22);
 const _kGreen      = Color(0xFF22C55E);
 const _kText1      = Color(0xFFEEF2FF);
 const _kText2      = Color(0xFF6B7FBF);
@@ -34,7 +34,7 @@ Color _rankColor(String rank) {
     case 'D': return const Color(0xFF22C55E);
     case 'C': return const Color(0xFF3B82F6);
     case 'B': return const Color(0xFFA855F7);
-    case 'A': return const Color(0xFFF97316);
+    case 'A': return const Color(0xFFE67E22);
     case 'S': return const Color(0xFFEF4444);
     default:  return const Color(0xFF6B7280);
   }
@@ -739,7 +739,7 @@ class _StatChipsRow extends StatelessWidget {
 
   static const _statColors = {
     'vitality':     Color(0xFFEF4444),
-    'strength':     Color(0xFFF97316),
+    'strength':     Color(0xFFE67E22),
     'intelligence': Color(0xFF3B82F6),
     'wisdom':       Color(0xFFA855F7),
     'charisma':     Color(0xFFEAB308),

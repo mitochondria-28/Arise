@@ -131,7 +131,7 @@ class _SummaryCards extends StatelessWidget {
                 label: 'Best Streak',
                 value: '${summary.bestStreak}',
                 icon: Icons.local_fire_department_rounded,
-                color: const Color(0xFFF97316),
+                color: const Color(0xFFE67E22),
                 suffix: Text(
                   'days',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -546,7 +546,7 @@ class _GoalsBreakdown extends StatelessWidget {
     switch (d) {
       case 'easy':   return const Color(0xFF22C55E);
       case 'medium': return const Color(0xFFEAB308);
-      case 'hard':   return const Color(0xFFF97316);
+      case 'hard':   return const Color(0xFFE67E22);
       case 'epic':   return const Color(0xFFA855F7);
       default:       return const Color(0xFF6B7280);
     }
@@ -689,11 +689,11 @@ class _TopMissions extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(Icons.local_fire_department,
-                              color: Color(0xFFF97316), size: 14),
+                              color: Color(0xFFE67E22), size: 14),
                           Text(
                             '${m.currentStreak}',
                             style: const TextStyle(
-                              color: Color(0xFFF97316),
+                              color: Color(0xFFE67E22),
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                             ),

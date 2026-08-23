@@ -19,7 +19,7 @@ const _kBlue   = Color(0xFF4FC3F7);
 const _kPurple = Color(0xFF9B59B6);
 const _kGold   = Color(0xFFFFD700);
 const _kGreen  = Color(0xFF34D399);
-const _kOrange = Color(0xFFF97316);
+const _kOrange = Color(0xFFE67E22);
 const _kRed    = Color(0xFFEF4444);
 const _kText   = Color(0xFFE2E8F0);
 const _kDim    = Color(0xFF64748B);
@@ -1009,7 +1009,7 @@ class _TemplateCard extends StatelessWidget {
   static const _diffColor = {
     'easy':   Color(0xFF22C55E),
     'medium': Color(0xFFF59E0B),
-    'hard':   Color(0xFFF97316),
+    'hard':   Color(0xFFE67E22),
     'epic':   Color(0xFFA855F7),
   };
 

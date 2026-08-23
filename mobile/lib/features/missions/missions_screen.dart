@@ -18,7 +18,7 @@ const _kBlue   = Color(0xFF4FC3F7);
 const _kPurple = Color(0xFF9B59B6);
 const _kGold   = Color(0xFFFFD700);
 const _kGreen  = Color(0xFF34D399);
-const _kOrange = Color(0xFFF97316);
+const _kOrange = Color(0xFFE67E22);
 const _kRed    = Color(0xFFEF4444);
 const _kText   = Color(0xFFE2E8F0);
 const _kDim    = Color(0xFF64748B);
@@ -868,12 +868,12 @@ class _CheckinSheetState extends State<_CheckinSheet> {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.local_fire_department, color: Color(0xFFF97316), size: 16),
+                    const Icon(Icons.local_fire_department, color: Color(0xFFE67E22), size: 16),
                     const SizedBox(width: 4),
                     Text(
                       '${widget.mission.currentStreak}-day streak',
                       style: const TextStyle(
-                          color: Color(0xFFF97316), fontWeight: FontWeight.w600, fontSize: 13),
+                          color: Color(0xFFE67E22), fontWeight: FontWeight.w600, fontSize: 13),
                     ),
                   ],
                 ),
