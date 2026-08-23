@@ -49,16 +49,21 @@ final routerProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => _AppShell(child: child),
         routes: [
-          GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
-          GoRoute(path: '/goals',     builder: (_, __) => const GoalsScreen()),
-          GoRoute(path: '/missions',  builder: (_, __) => const MissionsScreen()),
-          GoRoute(path: '/character', builder: (_, __) => const CharacterScreen()),
-          GoRoute(path: '/coach',     builder: (_, __) => const AICoachScreen()),
-          GoRoute(path: '/stats',        builder: (_, __) => const StatsScreen()),
-          GoRoute(path: '/achievements', builder: (_, __) => const AchievementsScreen()),
-          GoRoute(path: '/journal',      builder: (_, __) => const JournalScreen()),
-          GoRoute(path: '/profile',      builder: (_, __) => const ProfileScreen()),
-          GoRoute(path: '/skills',       builder: (_, __) => const SkillsScreen()),
+          GoRoute(
+              path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+          GoRoute(path: '/goals', builder: (_, __) => const GoalsScreen()),
+          GoRoute(
+              path: '/missions', builder: (_, __) => const MissionsScreen()),
+          GoRoute(
+              path: '/character', builder: (_, __) => const CharacterScreen()),
+          GoRoute(path: '/coach', builder: (_, __) => const AICoachScreen()),
+          GoRoute(path: '/stats', builder: (_, __) => const StatsScreen()),
+          GoRoute(
+              path: '/achievements',
+              builder: (_, __) => const AchievementsScreen()),
+          GoRoute(path: '/journal', builder: (_, __) => const JournalScreen()),
+          GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
+          GoRoute(path: '/skills', builder: (_, __) => const SkillsScreen()),
         ],
       ),
     ],
@@ -68,7 +73,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 class _AuthChangeNotifier extends ChangeNotifier {
   _AuthChangeNotifier(Ref ref) {
     ref.listen<AuthState>(authProvider, (_, __) => notifyListeners());
-    ref.listen<AsyncValue<void>>(authInitProvider, (_, __) => notifyListeners());
+    ref.listen<AsyncValue<void>>(
+        authInitProvider, (_, __) => notifyListeners());
   }
 }
 
@@ -116,11 +122,11 @@ class _AppShell extends StatelessWidget {
   const _AppShell({required this.child});
 
   static const _tabs = [
-    (icon: Icons.home_outlined,           label: 'Home',      path: '/dashboard'),
-    (icon: Icons.task_alt_outlined,       label: 'Missions',  path: '/missions'),
-    (icon: Icons.book_outlined,           label: 'Journal',   path: '/journal'),
-    (icon: Icons.emoji_events_outlined,   label: 'Awards',    path: '/achievements'),
-    (icon: Icons.person_outline,          label: 'Hunter',    path: '/character'),
+    (icon: Icons.home_outlined, label: 'Home', path: '/dashboard'),
+    (icon: Icons.task_alt_outlined, label: 'Missions', path: '/missions'),
+    (icon: Icons.book_outlined, label: 'Journal', path: '/journal'),
+    (icon: Icons.emoji_events_outlined, label: 'Awards', path: '/achievements'),
+    (icon: Icons.person_outline, label: 'Hunter', path: '/character'),
   ];
 
   int _currentIndex(BuildContext context) {
@@ -137,7 +143,8 @@ class _AppShell extends StatelessWidget {
         selectedIndex: _currentIndex(context),
         onDestinationSelected: (i) => context.go(_tabs[i].path),
         destinations: _tabs
-            .map((t) => NavigationDestination(icon: Icon(t.icon), label: t.label))
+            .map((t) =>
+                NavigationDestination(icon: Icon(t.icon), label: t.label))
             .toList(),
       ),
     );

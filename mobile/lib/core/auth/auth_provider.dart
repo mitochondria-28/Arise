@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'auth_repository.dart';
@@ -26,12 +27,20 @@ class AuthNotifier extends Notifier<AuthState> {
       return;
     }
 
-    // Restore session immediately from local storage so the user never sees
-    // the login screen just because the network is slow or unavailable.
+    // Mark authenticated immediately from local storage — the user must never
+    // land on the login screen just because the network is slow or the backend
+    // hasn't started yet.
     final cachedEmail = await storage.getEmail();
     state = AuthState(status: AuthStatus.authenticated, email: cachedEmail);
 
-    // Silently exchange the refresh token for a fresh pair in the background.
+    // Fire-and-forget: refresh tokens in the true background so authInitProvider
+    // completes instantly and the router can navigate to the dashboard right away.
+    // The auth interceptor handles the missing access token on the first API call.
+    unawaited(_backgroundTokenRefresh(storage, refreshToken, cachedEmail));
+  }
+
+  Future<void> _backgroundTokenRefresh(
+      AuthStorage storage, String refreshToken, String? cachedEmail) async {
     try {
       final tokens =
           await ref.read(authRepositoryProvider).refresh(refreshToken);
@@ -39,18 +48,19 @@ class AuthNotifier extends Notifier<AuthState> {
       await storage.saveRefreshToken(tokens.refreshToken);
       final freshEmail = _decodeEmail(tokens.accessToken);
       if (freshEmail != null) await storage.saveEmail(freshEmail);
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        email: freshEmail ?? cachedEmail,
-      );
+      if (state.isAuthenticated) {
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          email: freshEmail ?? cachedEmail,
+        );
+      }
     } on UnauthorizedException catch (_) {
-      // Backend explicitly rejected the token — force re-login.
+      // Backend explicitly rejected the refresh token — force re-login.
       await storage.clearAll();
       state = const AuthState(status: AuthStatus.unauthenticated);
     } catch (_) {
-      // Transient error (network down, server unreachable) — user stays
-      // authenticated with the cached session until their access token expires,
-      // at which point the auth interceptor will retry silentRefresh.
+      // Transient network error — keep the cached session alive.
+      // The access token will be fetched on the first API call via silentRefresh.
     }
   }
 
@@ -107,9 +117,14 @@ class AuthNotifier extends Notifier<AuthState> {
       storage.cacheAccessToken(tokens.accessToken);
       await storage.saveRefreshToken(tokens.refreshToken);
       return tokens.accessToken;
-    } catch (_) {
+    } on UnauthorizedException catch (_) {
+      // Backend explicitly rejected the token — clear session and force re-login.
       await storage.clearAll();
       state = const AuthState(status: AuthStatus.unauthenticated);
+      return null;
+    } catch (_) {
+      // Transient network error — return null so the API call fails gracefully
+      // without logging the user out of a perfectly valid session.
       return null;
     }
   }

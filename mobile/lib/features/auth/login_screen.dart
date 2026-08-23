@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/auth/auth_state.dart';
 import '../../shared/widgets/arise_button.dart';
+
+const _kRememberMe = 'arise_remember_me';
+const _kSavedEmail = 'arise_saved_email';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +22,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   bool _loading = false;
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remember = prefs.getBool(_kRememberMe) ?? false;
+    if (remember) {
+      final savedEmail = prefs.getString(_kSavedEmail) ?? '';
+      if (mounted) {
+        setState(() {
+          _rememberMe = true;
+          _emailCtrl.text = savedEmail;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -32,6 +58,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       await ref
           .read(authProvider.notifier)
           .login(_emailCtrl.text.trim(), _passCtrl.text);
+      if (ref.read(authProvider).status == AuthStatus.authenticated) {
+        final prefs = await SharedPreferences.getInstance();
+        if (_rememberMe) {
+          await prefs.setBool(_kRememberMe, true);
+          await prefs.setString(_kSavedEmail, _emailCtrl.text.trim());
+        } else {
+          await prefs.remove(_kRememberMe);
+          await prefs.remove(_kSavedEmail);
+        }
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -138,7 +174,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            onChanged: (v) =>
+                                setState(() => _rememberMe = v ?? false),
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _rememberMe = !_rememberMe),
+                          child: Text(
+                            'Remember me',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                     AriseButton(
                       label: 'Sign in',
                       loading: isLoading,
