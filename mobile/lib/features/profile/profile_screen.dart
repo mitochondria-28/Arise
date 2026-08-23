@@ -407,7 +407,7 @@ class _SkillsSection extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    height: 82,
+                    height: 96,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: preview.length,
@@ -463,7 +463,7 @@ class _SkillTile extends StatelessWidget {
 
     return Container(
       width: 74,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(10),
